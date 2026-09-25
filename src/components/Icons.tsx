@@ -236,3 +236,68 @@ export function PlusIcon({ size = 18, color = "currentColor" }: { size?: number;
     </svg>
   );
 }
+
+/* ── Bespoke Lattice-inspired Use Case Icons (Clean Outline Geometric Art) ── */
+
+export function LatticeAcademicIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Mortarboard / Academic Cap outline */}
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <path d="M6 9.5v6a6 6 0 0 0 12 0v-6" />
+      <path d="M22 7v7" />
+    </svg>
+  );
+}
+
+export function LatticeCommunicationIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Sleek paper plane launch outline like Image 2 */}
+      <path d="M5 15 L21 4 L11 20 L9 13 Z" />
+      <path d="M21 4 L9 13" />
+      <path d="M3 19 L6 16" />
+    </svg>
+  );
+}
+
+export function LatticeContentIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Creative 4-point sparkle star like Image 2 */}
+      <path d="M12 2 C12 6.5 13.5 8 18 8 C13.5 8 12 9.5 12 14 C12 9.5 10.5 8 6 8 C10.5 8 12 6.5 12 2 Z" />
+      <circle cx="18" cy="18" r="2.5" />
+    </svg>
+  );
+}
+
+export function LatticeReportsIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Isometric 3D Document / Cube spec like Image 2 */}
+      <path d="M12 2 L20 6.6 L20 16.4 L12 21 L4 16.4 L4 6.6 Z" />
+      <path d="M12 11.5 L12 2 M12 11.5 L20 16.4 M12 11.5 L4 16.4" />
+    </svg>
+  );
+}
+
+export function LatticeMultilingualIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Minimalist Globe orbital */}
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3.6 9h16.8M3.6 15h16.8" />
+      <path d="M12 3a14 14 0 0 0 0 18 14 14 0 0 0 0-18" />
+    </svg>
+  );
+}
+
+export function LatticeEverydayIcon({ size = 20, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+      {/* Minimal rounded speech bubble */}
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  );
+}
+
