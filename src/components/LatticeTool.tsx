@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Flag } from "./Flags";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { LanguageDropdown } from "./LanguageDropdown";
 import { EditPathModal } from "./EditPathModal";
 import {
@@ -12,9 +11,10 @@ import {
   TuneIcon,
   ChevronDownIcon,
   ArrowRightIcon,
+  CloseIcon,
 } from "./Icons";
-import { SUPPORTED_LANGUAGES, SAMPLE_PROMPTS, Language } from "@/data/languages";
-import { humaniseText, TransformationOptions } from "@/lib/transformer";
+import { SUPPORTED_LANGUAGES, Language } from "@/data/languages";
+import { TransformationOptions } from "@/lib/transformer";
 import { HistoryEntry } from "./HistoryDrawer";
 
 interface LatticeToolProps {
@@ -47,19 +47,31 @@ export function LatticeTool({
 
   const internalInputRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = inputRef || internalInputRef;
+  const advancedRef = useRef<HTMLDivElement>(null);
 
-  // Handle keyboard shortcut (Cmd/Ctrl + Enter)
+  const hasCustomOptions =
+    options.tone !== "natural" ||
+    options.intensity !== "balanced" ||
+    !options.preserveFormatting;
+
+  // Close advanced options popover on click outside
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        if (!isProcessing && inputText.trim()) {
-          handleTransform();
-        }
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        advancedRef.current &&
+        !advancedRef.current.contains(event.target as Node)
+      ) {
+        setIsAdvancedOpen(false);
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [inputText, isProcessing, path, options]);
+    if (isAdvancedOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isAdvancedOpen]);
+
 
   // Keep path start/end in sync with inputLang and outputLang
   const handleInputLangChange = (lang: Language) => {
@@ -114,29 +126,51 @@ export function LatticeTool({
     }
   };
 
-  const handleTransform = async () => {
+  const handleTransform = useCallback(async () => {
     if (!inputText.trim() || isProcessing) return;
 
     setIsProcessing(true);
     setCurrentHop(0);
 
-    try {
-      const result = await humaniseText(
-        inputText,
-        path,
-        options,
-        (step, total, code) => {
-          setCurrentHop(step);
-          const lang = SUPPORTED_LANGUAGES.find((l) => l.code === code);
-          const langName = lang ? lang.name : code;
-          if (step < total) {
-            setHopStatusText(`Step ${step}/${total}: Passing through ${langName}...`);
-          } else {
-            setHopStatusText(`Step ${step}/${total}: Naturalizing back into ${langName}...`);
-          }
-        }
-      );
+    // Number of translation hops (path has N nodes → N-1 hops)
+    const totalHops = path.length - 1;
+    // Estimated ms per hop (API delay + 300ms throttle + buffer)
+    const msPerHop = 1800;
 
+    // Animate hop progress in parallel while the fetch is running
+    let cancelled = false;
+    const animateHops = async () => {
+      for (let i = 0; i < totalHops; i++) {
+        if (cancelled) break;
+        setCurrentHop(i + 1);
+        const toCode = path[i + 1];
+        const lang = SUPPORTED_LANGUAGES.find((l) => l.code === toCode);
+        const langName = lang ? lang.name : toCode;
+        if (i < totalHops - 1) {
+          setHopStatusText(`Step ${i + 1}/${totalHops}: Passing through ${langName}...`);
+        } else {
+          setHopStatusText(`Step ${i + 1}/${totalHops}: Naturalizing back into ${langName}...`);
+        }
+        await new Promise((r) => setTimeout(r, msPerHop));
+      }
+    };
+    animateHops();
+
+    try {
+      const res = await fetch("/api/transform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: inputText, hops: path }),
+      });
+
+      const data = await res.json() as { result?: string; error?: string };
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? `HTTP ${res.status}`);
+      }
+
+      const result = data.result!;
+      cancelled = true;
       setOutputText(result);
 
       // Save to history
@@ -153,20 +187,28 @@ export function LatticeTool({
         pathNames,
       });
     } catch (err) {
+      cancelled = true;
       console.error("Transformation failed", err);
+      setHopStatusText(err instanceof Error ? `Error: ${err.message}` : "Transformation failed");
     } finally {
       setIsProcessing(false);
       setCurrentHop(null);
       setHopStatusText("");
     }
-  };
+  }, [inputText, isProcessing, path, onAddHistory]);
 
-  const handleApplyPresetPrompt = (sampleText: string) => {
-    setInputText(sampleText);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
+  // Handle keyboard shortcut (Cmd/Ctrl + Enter)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        if (!isProcessing && inputText.trim()) {
+          handleTransform();
+        }
+      }
     }
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [inputText, isProcessing, handleTransform]);
 
   const handlePathHopChange = (index: number, lang: Language) => {
     setPath((prev) => {
@@ -251,33 +293,9 @@ export function LatticeTool({
 
               <div className="editor-box output-box">
                 {isProcessing ? (
-                  <div
-                    style={{
-                      height: "215px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "14px",
-                      color: "#1A73E8",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "28px",
-                        height: "28px",
-                        border: "3px solid #D2E3FC",
-                        borderTopColor: "#1A73E8",
-                        borderRadius: "50%",
-                        animation: "spin 0.8s linear infinite",
-                      }}
-                    />
-                    <style>{`
-                      @keyframes spin {
-                        to { transform: rotate(360deg); }
-                      }
-                    `}</style>
-                    <span style={{ fontSize: "14px", color: "#5F6368" }}>
+                  <div className="output-processing-state">
+                    <div className="output-spinner" />
+                    <span className="output-status-text">
                       {hopStatusText || "Processing text through linguistic path..."}
                     </span>
                   </div>
@@ -325,9 +343,6 @@ export function LatticeTool({
             <div className="path-row">
               <div className="path-chain">
                 {path.map((code, idx) => {
-                  const lang =
-                    SUPPORTED_LANGUAGES.find((l) => l.code === code) ||
-                    SUPPORTED_LANGUAGES[0];
                   const isActiveHop = currentHop === idx;
 
                   return (
@@ -359,85 +374,108 @@ export function LatticeTool({
             </div>
           </div>
 
-          {/* Advanced Options Accordion Panel */}
-          {isAdvancedOpen && (
-            <div className="advanced-panel">
-              <div className="advanced-item">
-                <label className="advanced-label">Cadence & Tone</label>
-                <select
-                  value={options.tone}
-                  onChange={(e) =>
-                    onOptionsChange({
-                      ...options,
-                      tone: e.target.value as TransformationOptions["tone"],
-                    })
-                  }
-                  className="advanced-select"
-                >
-                  <option value="natural">Natural (Recommended)</option>
-                  <option value="academic">Academic & Formal</option>
-                  <option value="conversational">Conversational</option>
-                  <option value="professional">Professional</option>
-                  <option value="casual">Casual & Relaxed</option>
-                </select>
-              </div>
-
-              <div className="advanced-item">
-                <label className="advanced-label">Transformation Intensity</label>
-                <select
-                  value={options.intensity}
-                  onChange={(e) =>
-                    onOptionsChange({
-                      ...options,
-                      intensity: e.target.value as TransformationOptions["intensity"],
-                    })
-                  }
-                  className="advanced-select"
-                >
-                  <option value="subtle">Subtle</option>
-                  <option value="balanced">Balanced (Default)</option>
-                  <option value="expressive">Expressive</option>
-                </select>
-              </div>
-
-              <div className="advanced-item">
-                <label className="advanced-label">Formatting</label>
-                <label className="advanced-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={options.preserveFormatting}
-                    onChange={(e) =>
-                      onOptionsChange({
-                        ...options,
-                        preserveFormatting: e.target.checked,
-                      })
-                    }
-                    style={{ width: "16px", height: "16px", accentColor: "#1A73E8" }}
-                  />
-                  <span>Preserve paragraphs & lists</span>
-                </label>
-              </div>
-            </div>
-          )}
-
           {/* Card Bottom Controls */}
           <div className="card-bottom-row">
-            <button
-              type="button"
-              className="advanced-toggle-btn"
-              onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            >
-              <span
-                style={{
-                  display: "inline-block",
-                  transform: isAdvancedOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "transform 0.2s ease",
-                }}
+            <div className="advanced-popover-container" ref={advancedRef}>
+              <button
+                type="button"
+                className={`advanced-toggle-btn ${isAdvancedOpen ? "active" : ""}`}
+                onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                aria-expanded={isAdvancedOpen}
+                aria-haspopup="dialog"
               >
-                <ChevronDownIcon size={16} color="#5F6368" />
-              </span>
-              <span>Advanced options</span>
-            </button>
+                <TuneIcon size={15} color={isAdvancedOpen ? "var(--primary-blue)" : "var(--text-secondary)"} />
+                <span>Advanced options</span>
+                {hasCustomOptions && <span className="advanced-active-dot" />}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    transform: isAdvancedOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s ease",
+                  }}
+                >
+                  <ChevronDownIcon size={15} color={isAdvancedOpen ? "var(--primary-blue)" : "var(--text-muted)"} />
+                </span>
+              </button>
+
+              {isAdvancedOpen && (
+                <div className="advanced-popover-modal" role="dialog" aria-label="Advanced options">
+                  <div className="advanced-popover-header">
+                    <span className="advanced-popover-title">Transformation options</span>
+                    <button
+                      type="button"
+                      className="advanced-popover-close-btn"
+                      onClick={() => setIsAdvancedOpen(false)}
+                      aria-label="Close options"
+                    >
+                      <CloseIcon size={15} />
+                    </button>
+                  </div>
+
+                  <div className="advanced-popover-body">
+                    <div className="advanced-item">
+                      <label className="advanced-label">Cadence &amp; Tone</label>
+                      <div className="adv-pill-group">
+                        {([
+                          { value: "natural", label: "Natural" },
+                          { value: "academic", label: "Academic" },
+                          { value: "conversational", label: "Conversational" },
+                          { value: "professional", label: "Professional" },
+                          { value: "casual", label: "Casual" },
+                        ] as { value: TransformationOptions["tone"]; label: string }[]).map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className={`adv-pill${options.tone === opt.value ? " adv-pill--active" : ""}`}
+                            onClick={() => onOptionsChange({ ...options, tone: opt.value })}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="advanced-item">
+                      <label className="advanced-label">Transformation Intensity</label>
+                      <div className="adv-segment">
+                        {([
+                          { value: "subtle", label: "Subtle" },
+                          { value: "balanced", label: "Balanced" },
+                          { value: "expressive", label: "Expressive" },
+                        ] as { value: TransformationOptions["intensity"]; label: string }[]).map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            className={`adv-seg-btn${options.intensity === opt.value ? " adv-seg-btn--active" : ""}`}
+                            onClick={() => onOptionsChange({ ...options, intensity: opt.value })}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="advanced-item">
+                      <label className="advanced-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={options.preserveFormatting}
+                          onChange={(e) =>
+                            onOptionsChange({
+                              ...options,
+                              preserveFormatting: e.target.checked,
+                            })
+                          }
+                          style={{ width: "15px", height: "15px", accentColor: "var(--primary-blue)" }}
+                        />
+                        <span>Preserve paragraphs & lists</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <button
               type="button"

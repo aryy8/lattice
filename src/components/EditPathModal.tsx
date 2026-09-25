@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { SUPPORTED_LANGUAGES, PATH_PRESETS, Language } from "@/data/languages";
+import { SUPPORTED_LANGUAGES, PATH_PRESETS } from "@/data/languages";
 import { Flag } from "./Flags";
 import { CloseIcon, PlusIcon, TrashIcon } from "./Icons";
 
@@ -74,48 +74,18 @@ export function EditPathModal({
 
         <div className="modal-body">
           {/* Presets */}
-          <div style={{ marginBottom: "20px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "#5F6368",
-                marginBottom: "8px",
-              }}
-            >
-              Recommended Presets
-            </label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          <div className="preset-section">
+            <label className="preset-section-label">Recommended Presets</label>
+            <div className="preset-grid">
               {PATH_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
                   type="button"
                   onClick={() => handleApplyPreset(preset.path)}
-                  style={{
-                    fontSize: "12.5px",
-                    fontWeight: 500,
-                    padding: "6px 12px",
-                    background: "#F1F4F9",
-                    border: "1px solid #DADCE0",
-                    borderRadius: "20px",
-                    color: "#202124",
-                    transition: "all 0.15s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#E8F0FE";
-                    e.currentTarget.style.borderColor = "#D2E3FC";
-                    e.currentTarget.style.color = "#1A73E8";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#F1F4F9";
-                    e.currentTarget.style.borderColor = "#DADCE0";
-                    e.currentTarget.style.color = "#202124";
-                  }}
+                  className={`preset-btn${path.join(",") === preset.path.join(",") ? " preset-btn--active" : ""}`}
                 >
-                  {preset.name}
+                  <span className="preset-btn-name">{preset.name}</span>
+                  <span className="preset-btn-hops">{preset.path.length - 1} hops</span>
                 </button>
               ))}
             </div>
