@@ -12,6 +12,7 @@ import { Footer } from "@/components/Footer";
 import { HistoryDrawer, HistoryEntry } from "@/components/HistoryDrawer";
 import { SettingsModal } from "@/components/SettingsModal";
 import { TransformationOptions } from "@/lib/transformer";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export default function Home() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -31,7 +32,10 @@ export default function Home() {
     try {
       const saved = localStorage.getItem("lattice_history");
       if (saved) {
-        setHistory(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        queueMicrotask(() => {
+          setHistory(parsed);
+        });
       }
     } catch {
       // Ignore
@@ -78,6 +82,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <ScrollReveal />
       {/* 1. Hero Section: Top Navigation + Product Tool with vibrant silky background waves */}
       <div className="hero-wrapper">
         <HeroWaves />

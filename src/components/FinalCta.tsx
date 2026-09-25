@@ -10,57 +10,52 @@ interface FinalCtaProps {
 export function FinalCta({ onTryLattice }: FinalCtaProps) {
   return (
     <section className="final-cta-section">
-      {/* Decorative SVG curves and colored node dots matching Reference Image 2 */}
+      {/* Decorative SVG curves and colored node dots */}
       <svg
         className="cta-vector-bg"
-        viewBox="0 0 1440 300"
+        viewBox="0 0 1440 340"
         fill="none"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Primary soft sweeping wave line */}
         <path
-          d="M -100 240 C 200 160, 420 280, 720 200 C 1020 120, 1260 260, 1540 160"
-          stroke="#DCE8F8"
-          strokeWidth="1.6"
+          d="M -100 280 C 200 180, 420 320, 720 230 C 1020 140, 1260 290, 1540 190"
+          stroke="#C8DCEF"
+          strokeWidth="1.5"
           strokeLinecap="round"
           fill="none"
         />
         {/* Secondary gentle wave line */}
         <path
-          d="M -50 180 C 260 250, 480 140, 760 240 C 1040 340, 1280 180, 1500 220"
-          stroke="#E6EEF9"
-          strokeWidth="1.2"
+          d="M -50 200 C 260 280, 480 160, 760 270 C 1040 370, 1280 200, 1500 250"
+          stroke="#D5E8D4"
+          strokeWidth="1"
           strokeLinecap="round"
           fill="none"
         />
-
-        {/* Google-colored node dots positioned precisely along the curves */}
-        {/* Red dot */}
-        <circle cx="160" cy="200" r="4.5" fill="#EA4335" />
-        {/* Blue dot */}
-        <circle cx="280" cy="165" r="4" fill="#1A73E8" />
-        {/* Yellow dot */}
-        <circle cx="1140" cy="185" r="4.5" fill="#FBBC05" />
-        {/* Green dot */}
-        <circle cx="1220" cy="150" r="4" fill="#34A853" />
-        {/* Purple / Indigo dot */}
-        <circle cx="1290" cy="245" r="4" fill="#7B1FA2" />
+        {/* Google-colored node dots */}
+        <circle cx="160" cy="220" r="5" fill="rgba(234,67,53,0.5)" />
+        <circle cx="290" cy="182" r="4" fill="rgba(26,115,232,0.5)" />
+        <circle cx="1140" cy="205" r="5" fill="rgba(251,188,5,0.6)" />
+        <circle cx="1230" cy="166" r="4" fill="rgba(52,168,83,0.5)" />
+        <circle cx="1310" cy="268" r="4" fill="rgba(123,31,162,0.5)" />
       </svg>
 
       <div className="final-cta-content">
-        <h2 className="final-cta-heading">Start with a sentence.</h2>
-        <p className="final-cta-sub">
+        <p className="final-cta-eyebrow reveal">Ready to try it?</p>
+        <h2 className="final-cta-heading reveal reveal-delay-1">Start with a sentence.</h2>
+        <p className="final-cta-sub reveal reveal-delay-2">
           Transform your text and make it sound more natural in seconds.
         </p>
 
         <button
           type="button"
-          className="final-cta-btn"
+          className="final-cta-btn reveal reveal-delay-3"
           onClick={onTryLattice}
         >
           <span>Try Lattice</span>
-          <ArrowRightIcon size={16} color="#FFFFFF" />
+          <ArrowRightIcon size={17} color="#FFFFFF" />
         </button>
       </div>
     </section>

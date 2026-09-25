@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import { Flag } from "./Flags";
 import { ArrowRightIcon } from "./Icons";
+import { DotField } from "./DotField";
 
 export function HowItWorks() {
   const steps = [
@@ -14,9 +17,16 @@ export function HowItWorks() {
   return (
     <section className="how-it-works-section">
       <div className="lattice-container">
-        <div className="how-it-works-card">
-          {/* Left Text Content */}
-          <div>
+        <div className="how-it-works-card reveal" style={{ position: "relative", overflow: "hidden" }}>
+          {/* Wave dot pattern inside the card */}
+          <DotField
+            pattern="wave"
+            color="26, 115, 232"
+            opacity={0.08}
+            density={0.9}
+          />
+
+          <div style={{ position: "relative", zIndex: 1 }}>
             <div className="section-overline">HOW IT WORKS</div>
             <h2 className="how-heading">A different path to the same idea.</h2>
             <p className="how-desc">
@@ -26,12 +36,12 @@ export function HowItWorks() {
             </p>
           </div>
 
-          {/* Right Visual Sequence matching Reference 2 */}
-          <div className="how-sequence">
+          {/* Right Visual Sequence */}
+          <div className="how-sequence" style={{ position: "relative", zIndex: 1 }}>
             {steps.map((step, idx) => (
               <React.Fragment key={`${step.name}-${idx}`}>
                 <div className="how-node-card">
-                  <Flag code={step.code} size={28} />
+                  <Flag code={step.code} size={32} />
                   <span className="how-node-name">{step.name}</span>
                 </div>
 
