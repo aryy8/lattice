@@ -371,7 +371,6 @@ export function AuthModal() {
           )}
         </div>
 
-        {/* Clean Professional Footer */}
         <p
           style={{
             fontSize: "11.5px",
@@ -380,7 +379,25 @@ export function AuthModal() {
             lineHeight: 1.4,
           }}
         >
-          By signing in, you agree to Lattice Terms of Service and Privacy Policy.
+          By signing in, you agree to Lattice{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#1A73E8", textDecoration: "underline" }}
+          >
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#1A73E8", textDecoration: "underline" }}
+          >
+            Privacy Policy
+          </a>
+          .
         </p>
       </div>
     </div>

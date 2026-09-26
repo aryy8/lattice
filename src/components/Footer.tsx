@@ -24,10 +24,10 @@ export function Footer({ onTryLattice }: FooterProps) {
           <a href="#" className="footer-link">
             About
           </a>
-          <a href="#" className="footer-link">
+          <a href="/privacy" className="footer-link">
             Privacy
           </a>
-          <a href="#" className="footer-link">
+          <a href="/terms" className="footer-link">
             Terms
           </a>
           <a href="#" className="footer-link">
