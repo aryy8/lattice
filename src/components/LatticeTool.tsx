@@ -16,6 +16,7 @@ import {
 import { SUPPORTED_LANGUAGES, Language } from "@/data/languages";
 import { TransformationOptions } from "@/lib/transformer";
 import { HistoryEntry } from "./HistoryDrawer";
+import { useAuth } from "@/context/AuthContext";
 
 interface LatticeToolProps {
   onAddHistory: (entry: HistoryEntry) => void;
@@ -30,6 +31,7 @@ export function LatticeTool({
   onOptionsChange,
   inputRef,
 }: LatticeToolProps) {
+  const { user, openAuthModal } = useAuth();
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [inputLang, setInputLang] = useState("en");
@@ -126,7 +128,7 @@ export function LatticeTool({
     }
   };
 
-  const handleTransform = useCallback(async () => {
+  const runTransformation = useCallback(async () => {
     if (!inputText.trim() || isProcessing) return;
 
     setIsProcessing(true);
@@ -163,7 +165,7 @@ export function LatticeTool({
         body: JSON.stringify({ text: inputText, hops: path }),
       });
 
-      const data = await res.json() as { result?: string; error?: string };
+      const data = (await res.json()) as { result?: string; error?: string };
 
       if (!res.ok || data.error) {
         throw new Error(data.error ?? `HTTP ${res.status}`);
@@ -196,6 +198,20 @@ export function LatticeTool({
       setHopStatusText("");
     }
   }, [inputText, isProcessing, path, onAddHistory]);
+
+  const handleTransform = useCallback(() => {
+    if (!inputText.trim() || isProcessing) return;
+
+    // Ask user to log in if not logged in
+    if (!user) {
+      openAuthModal(() => {
+        runTransformation();
+      });
+      return;
+    }
+
+    runTransformation();
+  }, [inputText, isProcessing, user, openAuthModal, runTransformation]);
 
   // Handle keyboard shortcut (Cmd/Ctrl + Enter)
   useEffect(() => {
