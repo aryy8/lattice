@@ -137,8 +137,8 @@ export default function TermsPage() {
               </h2>
               <p>
                 For questions regarding these Terms, contact us at:{" "}
-                <a href="mailto:support@aryy.in" style={{ color: "#1A73E8", textDecoration: "underline" }}>
-                  support@aryy.in
+                <a href="mailto:aryanfeb17@gmail.com" style={{ color: "#1A73E8", textDecoration: "underline" }}>
+                  aryanfeb17@gmail.com
                 </a>
               </p>
             </section>

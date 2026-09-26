@@ -256,10 +256,10 @@ export default function PrivacyPage() {
               <p>
                 If you have questions regarding this Privacy Policy, please contact us at:{" "}
                 <a
-                  href="mailto:support@aryy.in"
+                  href="mailto:aryanfeb17@gmail.com"
                   style={{ color: "#1A73E8", textDecoration: "underline" }}
                 >
-                  support@aryy.in
+                  aryanfeb17@gmail.com
                 </a>
               </p>
             </section>
